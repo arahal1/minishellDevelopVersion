@@ -1,4 +1,4 @@
-#include "../../include/env.h"
+#include "../../includes/env.h"
 
 int  key_match(const char *a, const char *b)
 {
@@ -23,6 +23,20 @@ t_env	*env_find(t_env *env, const char *key)
 	{
 		if (key_match(key, cur->key))
 			return (cur);
+		cur = cur->next;
+	}
+	return (NULL);
+}
+
+char	*env_find_alias(t_env *env, const char *key)
+{
+    t_env   *cur;
+
+	cur = env;
+	while (cur)
+	{
+		if (key_match(key, cur->key))
+			return (cur->value);
 		cur = cur->next;
 	}
 	return (NULL);
