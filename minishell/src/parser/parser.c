@@ -275,8 +275,6 @@ t_cmd	*parse_token(t_token *token)
 	t_word		*words;
 	t_word		*new_word;
 
-	if (token == NULL)
-		return (NULL);
 	words = NULL;
 	if (!token)
 		return (NULL);

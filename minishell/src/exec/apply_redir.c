@@ -50,7 +50,7 @@ int apply_redirs(t_shell *shell, t_cmd *cmd)
 {
     t_redir *cur_r;
 
-    if (cmd == NULL)
+    if (!cmd)
         return (1);
     cur_r = cmd->redirs;
     while (cur_r)

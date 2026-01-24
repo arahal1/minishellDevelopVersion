@@ -6,7 +6,7 @@
 /*   By: adbouk <adbouk@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/05 15:54:36 by adbouk            #+#    #+#             */
-/*   Updated: 2026/01/22 19:55:20 by adbouk           ###   ########.fr       */
+/*   Updated: 2026/01/20 15:32:52 by adbouk           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -476,17 +476,15 @@ static const char *toktype_to_str(t_toktype type)
 void	print_tokens(t_token *head)
 {
 	int	i;
-    t_token *cur;
 
-    i = 0;
-    cur = head;
-    while (cur)
-    {
-		printf("[%d] type=%s (%d)", i, toktype_to_str(cur->type), cur->type);
-		if (cur->value)
-			printf(" value=\"%s\"", cur->value);
+	i = 0;
+	while (head)
+	{
+		printf("[%d] type=%s (%d)", i, toktype_to_str(head->type), head->type);
+		if (head->value)
+			printf(" value=\"%s\"", head->value);
 		printf("\n");
-		cur = cur->next;
+		head = head->next;
 		i++;
 	}
 }
@@ -545,8 +543,7 @@ t_token *init_token (char *line, t_shell *sh)
     head = NULL;
     head = ft_split_line(line, sh);
     head = ft_verify_tokens(head);
-    if (head != NULL)
-        print_tokens(head);
+    // print_tokens(head);
     // free(line);
     return (head);
 }

@@ -1,4 +1,5 @@
 #include "../../includes/minishell.h"
+#include "../../includes/exec.h"
 
 int stdio_backup(t_stdio_bak *bak)
 {

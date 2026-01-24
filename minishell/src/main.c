@@ -6,13 +6,11 @@
 /*   By: adbouk <adbouk@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/05 09:23:22 by adbouk            #+#    #+#             */
-/*   Updated: 2026/01/22 19:56:41 by adbouk           ###   ########.fr       */
+/*   Updated: 2026/01/23 18:46:31 by adbouk           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-#include "../includes/env.h"
-#include "../includes/exec.h"
 
 void create (char *str)
 {
@@ -65,25 +63,26 @@ void printtt (char **strs)
     }
 }
 
-int	main(int argc, char **argv, char **envp)
-{
-    char *str;
-    t_shell sh;
-    t_token *head;
-    t_cmd *p;
+// int	main(int argc, char **argv, char **envp)
+// {
+//     char *str;
+//     t_shell sh;
+//     t_token *head;
+//     t_cmd *p;
 
-    (void)argc;
-    (void)argv;
-    str = "wc -l < files|\0";
-    head = NULL;
-    if (env_init_from_envp(&sh, envp) == -1)
-        return (0);
-    head = init_token(str, &sh);
-    p = parse_token(head);
-    // print_cmd_list(p);
-    apply_redirs(&sh, p);
-    exec_one_pipeline(&sh, p);
-    free_cmds(p);
-    env_clear(&sh.env);
-    return (0);
-}
+//     (void)argc;
+//     (void)argv;
+//     str = "ls -la | grep \"^d\" > fileessss | sort | head -n 5 | wc -l\0";
+//     head = NULL;
+//     if (env_init_from_envp(&sh, envp) == -1)
+//         return (0);
+//     head = init_token(str, &sh);
+//     p = parse_token(head);
+//     //print_cmd_list(p);
+//     // apply_redirs(&sh, p);
+//     // exec_one_pipeline(&sh, p);
+//     exec_pipeline(&sh, p);
+//     free_cmds(p);
+//     env_clear(&sh.env);
+//     return (0);
+// }

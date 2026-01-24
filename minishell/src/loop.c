@@ -6,13 +6,13 @@
 /*   By: adbouk <adbouk@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/05 09:34:03 by adbouk            #+#    #+#             */
-/*   Updated: 2026/01/21 22:49:00 by adbouk           ###   ########.fr       */
+/*   Updated: 2026/01/23 18:46:21 by adbouk           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/minishell.h"
+#include "minishell.h"
 
-static void	ms_handle_line(char *line)
+void	ms_handle_line(char *line)
 {
 	printf("You typed: %s\n", line);
 }
@@ -81,8 +81,8 @@ int	ms_loop(char **envp)
 	int     interactive;
 	t_shell sh;
 	t_token *head;
+	t_cmd *p;
 
-	head = NULL;
 	if (env_init_from_envp(&sh, envp) == -1)
 		return (0);
 	interactive = isatty(STDIN_FILENO) && isatty(STDOUT_FILENO);
@@ -101,11 +101,17 @@ int	ms_loop(char **envp)
 		if (interactive && line[0] != '\0')
 		{
 			add_history(line);
+			head = NULL;
 			head = init_token(line, &sh);
-			free_token(head);
+			p = parse_token(head);
+			//print_cmd_list(p);
+			// apply_redirs(&sh, p);
+			// exec_one_pipeline(&sh, p);
+			exec_pipeline(&sh, p);
+			free_cmds(p);
 		}
-		ms_handle_line(line);
-		// free(line);
+		//ms_handle_line(line);
+		free(line);
 	}
 	if (interactive)
 		rl_clear_history();

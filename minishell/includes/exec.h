@@ -12,7 +12,8 @@ typedef struct s_stdio_bak
 }   t_stdio_bak;
 
 int     apply_redirs(t_shell *sh, t_cmd *cmd);
-int     stdio_backup(t_stdio_bak *bak);
+int stdio_backup(t_stdio_bak *bak);
 void    stdio_restore(t_stdio_bak *bak);
+void child_process(t_cmd *cmd, char **envp, char *path);
 
 #endif

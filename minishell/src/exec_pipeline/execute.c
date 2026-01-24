@@ -1,4 +1,5 @@
 #include "../../includes/minishell.h"
+#include "../../includes/exec.h"
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/wait.h>
@@ -60,19 +61,16 @@ static void	child_setup_pipe_fds(int prev_read, int pipefd[2], int is_last)
 }
 
 /* If you have Phase 7, apply it here */
-static int	child_apply_redirs(t_cmd *cmd)
+static int	child_apply_redirs(t_shell *sh, t_cmd *cmd)
 {
-	/* Example:
-	   return apply_redirs(cmd->redirs);
-	   Must override pipe dup2 when present.
-	*/
-	(void)cmd;
+	apply_redirs(sh, cmd);
 	return (0);
 }
 
-static void	child_exec(t_shell *sh, t_cmd *cmd)
+static int	child_exec(t_shell *sh, t_cmd *cmd)
 {
-	/* Redirs-only command: no argv[0] */
+	char *path;
+	char    **envp;
 	if (!cmd->argv || !cmd->argv[0])
 		exit(0);
 
@@ -82,8 +80,15 @@ static void	child_exec(t_shell *sh, t_cmd *cmd)
 	   - execve(path, cmd->argv, envp)
 	   - if execve fails -> perror + exit(126/127)
 	*/
-	exec_external(sh, cmd); /* <-- you implement: does execve or exits */
+	path = resolve_cmd_path(sh, cmd->argv[0], &sh->last_status);
+    if (!path)
+        return (sh->last_status);
+    envp = env_to_envp(sh);
+    if (!envp)
+		return (free(path), sh->last_status = 1, 1); /* <-- you implement: does execve or exits */
+	child_process(cmd, envp, path);
 	exit(1);
+	return (0);
 }
 
 /* ----------------- wait all ----------------- */
@@ -115,6 +120,37 @@ static int	wait_pipeline(pid_t *pids, int n, pid_t last_pid)
 	return (status_to_exitcode(last_status));
 }
 
+int is_builtin_cmd(t_cmd *cmd)
+{
+    if (!cmd || !cmd->argv || !cmd->argv[0])
+        return 0;
+    if (ft_strcmp(cmd->argv[0], "echo") == 0 || ft_strcmp(cmd->argv[0], "cd") == 0
+		|| ft_strcmp(cmd->argv[0], "pwd") == 0 || ft_strcmp(cmd->argv[0], "export") == 0
+		|| ft_strcmp(cmd->argv[0], "unset") == 0|| ft_strcmp(cmd->argv[0], "env") == 0
+		|| ft_strcmp(cmd->argv[0], "exit") == 0)
+		return 1;
+    return 0;
+}
+
+int run_builtin (t_shell *sh, t_cmd *cmds)
+{
+	if (ft_strcmp(cmds->argv[0], "echo") == 0)
+		return (exec_echo(cmds));
+	if (ft_strcmp(cmds->argv[0], "cd") == 0)
+		return (exec_cd(sh, cmds));
+	if (ft_strcmp(cmds->argv[0], "pwd") == 0)
+		return (exec_pwd(cmds));
+	// if (ft_strcmp(cmds->argv[0], "export") == 0)
+	// 	return (exec_sexport(sh, cmds));
+	// if (ft_strcmp(cmds->argv[0], "unset") == 0)
+	// 	return (exec_unset(sh, cmds));
+	if (ft_strcmp(cmds->argv[0], "env") == 0)
+		return (exec_env(sh, cmds));
+	// if (ft_strcmp(cmds->argv[0], "exit") == 0)
+	// 	return (exec_exit(sh, cmds));
+	return (1);
+}
+
 /* ----------------- main entry ----------------- */
 
 int	exec_pipeline(t_shell *sh, t_cmd *cmds)
@@ -128,11 +164,25 @@ int	exec_pipeline(t_shell *sh, t_cmd *cmds)
 	pid_t	last_pid;
 	t_cmd	*cur;
 	int		error_happened;
+	t_stdio_bak back;
 
 	n = count_cmds(cmds);
 	if (n == 0)
 		return (0);
-
+	if (n == 1 && is_builtin_cmd (cmds))
+	{
+		if (stdio_backup (&back))
+			return (1);
+		if (apply_redirs(sh, cmds) != 0) // if you return error codes
+		{
+		stdio_restore(&back);
+		sh->last_status = 1;
+		return (1);
+		}
+		sh->last_status = run_builtin(sh, cmds);
+		stdio_restore(&back);
+		return (sh->last_status);
+	}
 	pids = malloc(sizeof(pid_t) * n);
 	if (!pids)
 		return (1);
@@ -174,9 +224,10 @@ int	exec_pipeline(t_shell *sh, t_cmd *cmds)
 			child_setup_pipe_fds(prev_read, pipefd, (cur->next == NULL));
 
 			/* Apply redirs AFTER pipe dup2 so redirs override */
-			if (child_apply_redirs(cur) != 0)
+			if (child_apply_redirs(sh, cur) != 0)
 				exit(1);
-
+			if (is_builtin_cmd(cur))
+				exit(run_builtin(sh, cur));
 			child_exec(sh, cur);
 		}
 

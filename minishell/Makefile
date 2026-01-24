@@ -17,7 +17,9 @@ SRCS := src/main.c src/loop.c ./src/lexer/lexer_split.c \
 	  ./src/env/env_set.c ./src/env/env_to_envp_helper.c ./src/env/env_to_envp.c \
 	  ./src/env/env_unset.c ./src/parser/parser.c ./src/parser/parser_print.c \
 	  ./src/executor/exec_external.c ./src/executor/exec_one.c ./src/executor/path_resolve.c \
-	  ./src/exec/apply_redir.c
+	  ./src/exec/apply_redir.c ./src/exec_pipeline/execute.c ./src/maintest.c \
+	  ./src/builtins/echo.c ./src/exec/stdio_backup.c ./src/builtins/cd.c ./src/builtins/pwd.c \
+	  ./src/builtins/env.c
 
 OBJS := $(SRCS:.c=.o)
 
